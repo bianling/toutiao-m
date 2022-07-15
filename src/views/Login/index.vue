@@ -75,7 +75,7 @@ export default {
         this.$toast.loading('登陆中...')
         const { data } = await login(this.mobile, this.code)
         this.setUser(data.data)
-        this.$router.push('/layout')
+        this.$router.push('/profile')
         this.$toast.success('登陆成功')
       } catch (e) {
         const status = e.response.status
