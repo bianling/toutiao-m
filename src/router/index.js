@@ -30,6 +30,11 @@ const routes = [
         component: () => import('@/views/My')
       }
     ]
+  },
+  // 跳转搜索页面
+  {
+    path: '/search',
+    component: () => import('@/views/Search')
   }
 ]
 
