@@ -31,3 +31,28 @@ export const getUserInfo = () => {
         url: '/v1_0/user'
     })
 }
+
+// 关注用户
+export const follow = (id) => {
+    return request({
+        url: '/v1_0/user/followings',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: {
+            target: id
+        }
+    })
+}
+
+// 取消关注
+export const unFollow = (id) => {
+    return request({
+        url: `/v1_0/user/followings/${id}`,
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+}

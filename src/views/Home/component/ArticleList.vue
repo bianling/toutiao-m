@@ -18,6 +18,7 @@
           v-for="item in articles"
           :key="item.art_id"
           :articleInfo="item"
+          @click.native="goDetail(item.art_id)"
         />
       </van-list>
     </van-pull-refresh>
@@ -86,6 +87,15 @@ export default {
         this.loading = false
         this.refreshing = false
       }
+    },
+    // 跳转文章详情页面
+    goDetail(id) {
+      this.$router.push({
+        name: 'detail',
+        params: {
+          id
+        }
+      })
     }
   },
   components: {

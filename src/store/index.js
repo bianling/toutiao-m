@@ -5,14 +5,22 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    user: getToken() || {}
+    // 获取token
+    user: getToken() || {},
+    // 存储被回复评论的单条数据
+    commentItem: {}
   },
   getters: {
   },
   mutations: {
+    // 修改token
     setUser(state, val) {
       state.user = val
       setToken(val)
+    },
+    // 被回复评论的单条数据
+    setCommentItem(state, commentItem) {
+      state.commentItem = commentItem
     }
   },
   actions: {
