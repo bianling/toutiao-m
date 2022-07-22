@@ -56,3 +56,34 @@ export const unFollow = (id) => {
         }
     })
 }
+
+// 获取用户个人资料
+export const getUserProfile = () => {
+    return request({
+        url: '/v1_0/user/profile',
+        method: 'GET'
+    })
+}
+
+// 编辑用户个人资料
+export const setUserProfile = (data) => {
+    return request({
+        url: '/v1_0/user/profile',
+        method: 'PATCH',
+        data
+    })
+}
+
+// 编辑用户头像
+export const setUserPhoto = (file) => {
+    return request({
+        url: '/v1_0/user/photo',
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        },
+        data: {
+            file
+        }
+    })
+}

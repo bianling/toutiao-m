@@ -19,7 +19,9 @@
             </van-row>
           </van-col>
           <van-col span="6">
-            <van-button class="code-btn" size="mini" round>编辑资料</van-button>
+            <van-button class="code-btn" size="mini" round @click="goUser"
+              >编辑资料</van-button
+            >
           </van-col>
         </van-row>
         <van-row>
@@ -108,10 +110,20 @@ export default {
       } catch (error) {
         this.$toast.fail('请重新登录')
       }
+    },
+    // 跳转编辑资料页面
+    goUser() {
+      if (this.user.token) {
+        this.$router.push({
+          name: 'user'
+        })
+      } else {
+        this.$toast.fail('暂无权限,请登录')
+      }
     }
   },
   created() {
-    if (this.$store.state.user.token) {
+    if (this.user.token) {
       this.getUserInfo()
     }
   }
