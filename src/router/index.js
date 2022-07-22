@@ -40,6 +40,10 @@ const routes = [
     path: '/detail/:id',
     name: 'detail',
     component: () => import('@/views/detail')
+  },
+  {
+    path: '/user',
+    component: () => import('@/views/user')
   }
 ]
 
