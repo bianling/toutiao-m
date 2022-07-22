@@ -6,7 +6,7 @@
     <!-- 头像 -->
     <div class="title-img">
       <!-- 点击上传区域 -->
-      <van-uploader :after-read="addFile">
+      <van-uploader :after-read="addFile" v-model="fileList">
         <van-cell title="头像" is-link @click="showPhoto = true">
           <div slot="default" class="head-portrait">
             <van-image
@@ -23,9 +23,13 @@
       <van-popup
         v-model="showPhoto"
         position="bottom"
-        :style="{ height: '95%' }"
+        :style="{ height: '100%' }"
       >
-        <van-image :src="fileImg" width="10rem" height="10rem" fit="contain" />
+        <div class="fileImg-div">
+          <img :src="url" class="popup-img" ref="img" />
+        </div>
+        <span class="unUpUserPhoto" @click="unUpUserPhoto">取消</span>
+        <span class="upUserPhoto" @click="upUserPhoto">确定</span>
       </van-popup>
     </div>
     <!-- 头像 -->
@@ -105,6 +109,9 @@
 </template>
 
 <script>
+import Cropper from 'cropperjs'
+import 'cropperjs/dist/cropper.css'
+
 import { getUserProfile, setUserProfile, setUserPhoto } from '@/apis/user'
 import dayjs from '@/utils/dayjs'
 export default {
@@ -131,23 +138,59 @@ export default {
       showBirthday: false,
       showPhoto: false,
       fileList: [],
-      fileImg: ''
+      url: '',
+      flag: true, // 节流阀
+      // cropperjs配置
+      myCropper: ''
     }
   },
   created() {
     this.getUserProfile()
   },
   methods: {
+    // 图片插件初始化
     // 上传图片调用
-    async addFile(file) {
-      this.fileImg = file.content
+    addFile() {
+      // 控制弹出层图片的url路径
+      this.url = this.fileList[0].content
       this.showPhoto = true
-      console.log(file)
+      // 初始化插件
+      this.fileList = []
+      if (!this.myCropper) {
+        this.$nextTick(() => {
+          console.log(this.$refs.img)
+          this.myCropper = new Cropper(this.$refs.img, {
+            viewMode: 1, // 只能在裁剪的图片范围内移动
+            dragMode: 'move', // 画布和图片都可以移动
+            aspectRatio: 1, // 裁剪区默认正方形
+            autoCropArea: 1, // 自动调整裁剪图片
+            cropBoxMovable: false, // 禁止裁剪区移动
+            cropBoxResizable: false, // 禁止裁剪区缩放
+            background: false // 关闭默认背景
+          })
+        })
+      }
+    },
+    // 更新头像
+    async upUserPhoto() {
       try {
-        const fromData = new FormData()
-        fromData.append('file', file.file)
-        const res = await setUserPhoto(fromData)
-        console.log(res)
+        // 搞个节流防止图片太大多次触发
+        console.log(this.myCropper)
+        console.log(this.myCropper.getCroppedCanvas())
+        if (this.flag) {
+          this.flag = false
+          // 插件的方法可以将数据使用fromData包裹上传至后端
+          this.myCropper.getCroppedCanvas().toBlob(async (blob) => {
+            const fromData = new FormData()
+            fromData.append('photo', blob)
+            await setUserPhoto(fromData)
+            // 后续的提示和关闭弹窗
+            this.$toast.success('更改头像成功')
+            this.showPhoto = false
+            this.getUserProfile()
+            this.flag = true
+          })
+        }
       } catch (error) {
         console.log(error)
       }
@@ -157,7 +200,6 @@ export default {
       try {
         this.userInfo = (await getUserProfile()).data.data
         this.currentDate = new Date(this.userInfo.birthday)
-        console.log(this.userInfo)
       } catch (error) {
         if (error.response.status === 401) {
           this.$toast.fail('用户信息认证失败,请登录重试')
@@ -207,6 +249,10 @@ export default {
       this.showBirthday = false
       this.$toast.success('更新成功')
     },
+    // 取消更新头像
+    unUpUserPhoto() {
+      this.showPhoto = false
+    },
     // 取消更新生日
     unUpBirthday() {
       this.showBirthday = false
@@ -242,6 +288,16 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.fileImg-div {
+  width: 100%;
+  height: 100%;
+  .popup-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
 .title-img {
   .van-popup {
     display: flex;
@@ -284,5 +340,20 @@ export default {
       color: #1989fa;
     }
   }
+}
+//弹出层图片退出确认样式
+.unUpUserPhoto {
+  color: #fff;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  font-size: 30px;
+}
+.upUserPhoto {
+  color: #fff;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  font-size: 30px;
 }
 </style>

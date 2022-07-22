@@ -79,11 +79,6 @@ export const setUserPhoto = (file) => {
     return request({
         url: '/v1_0/user/photo',
         method: 'PATCH',
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        },
-        data: {
-            file
-        }
+        data: file
     })
 }
