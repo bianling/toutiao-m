@@ -72,14 +72,21 @@ export default {
   methods: {
     // 打开弹窗并且将该评论的内容传送到vuex上
     popupShow() {
-      this.$emit('popupShow')
       this.setCommentItem(this.commentItem)
+      // 先把值传完再把弹窗打开,不然拿不到值可能出现报错
+      setTimeout(() => {
+        this.$emit('popupShow')
+      }, 0)
     },
     // 点赞
     async likeComment() {
       try {
         await likeComment(this.commentItem.com_id)
-        this.$emit('addCommentList')
+        if (this.$parent.$parent.$parent.addCommentList) {
+          this.$parent.$parent.$parent.addCommentList(this.commentItem.com_id)
+        } else {
+          this.$emit('addCommentList')
+        }
         this.$toast.success('已点赞')
       } catch (error) {
         console.log(error)
@@ -89,23 +96,17 @@ export default {
     async unLikeComment() {
       try {
         await unLikeComment(this.commentItem.com_id)
-        this.$emit('addCommentList')
+        if (this.$parent.$parent.$parent.addCommentList) {
+          this.$parent.$parent.$parent.addCommentList(this.commentItem.com_id)
+        } else {
+          this.$emit('addCommentList')
+        }
         this.$toast.success('取消点赞')
       } catch (error) {
         console.log(error)
       }
     },
-    // 取消点赞
     ...mapMutations(['setCommentItem'])
-  },
-  // 监听commentItem的改变
-  watch: {
-    commentItem: {
-      deep: true,
-      handler() {
-        console.log(this.commentItem)
-      }
-    }
   }
 }
 </script>

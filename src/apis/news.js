@@ -33,6 +33,19 @@ export const getCommentsList = (id, offset) => {
         }
     })
 }
+// 获取文章评论回复列表
+export const getCommentTowLsit = (id, offset) => {
+    return request({
+        url: '/v1_0/comments',
+        method: 'GET',
+        params: {
+            type: 'c',
+            source: id,
+            offset,
+            limit: 10
+        }
+    })
+}
 
 // 收藏文章
 export const collections = (target) => {

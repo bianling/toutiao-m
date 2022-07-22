@@ -48,7 +48,7 @@
     </div>
     <!-- navBar -->
     <!-- 单挑评论回复区域 -->
-    <div class="Popup" v-if="commentItem">
+    <div class="Popup" v-if="commentItem.com_id">
       <PopupReply ref="Popup" />
     </div>
   </div>
@@ -62,7 +62,7 @@ import Comment from './Comment'
 import dayjs from '@/utils/dayjs'
 import NavBar from './NavBar'
 import PopupReply from './PopupReply'
-import { mapState } from 'vuex'
+import { mapMutations, mapState } from 'vuex'
 export default {
   name: 'Detail',
   data() {
@@ -92,8 +92,8 @@ export default {
         console.log(error)
       }
     },
-    // 获取文章评论区
-    async getCommentsList() {
+    // 获取文章评论区 id是二级评论的id,一级评论不传
+    async getCommentsList(id = '') {
       try {
         const lastId = this.commentList.last_id || ''
         const res = (await getCommentsList(this.$route.params.id, lastId)).data
@@ -110,18 +110,29 @@ export default {
           this.commentList.last_id = res.last_id
         }
         // 判断目前文章数量是不是和总文章数量相同,相同结束
-
         if (this.commentList.results.length >= res.total_count) {
           this.finished = true
         }
         this.loading = false
-        console.log(this.commentList)
       } catch (error) {
         console.log(error)
       }
+      // 判断有没有id,如果有而且查找不到进行递归查找
+      if (id) {
+        // 如果是二级点赞,将vuex中存储的内容重新赋值
+        const index = this.commentList.results.findIndex(
+          (item) => item.com_id === id
+        )
+        // 如果查找到了直接赋值,没有查找到需要继续往下查找
+        if (index !== -1) {
+          this.setCommentItem(this.commentList.results[index])
+        } else {
+          this.getCommentsList(id)
+        }
+      }
     },
-    // 当发布评论时和点赞时重新获取
-    async addCommentList() {
+    // 当发布评论时和点赞时重新获取 id是二级评论的id,一级评论不传
+    async addCommentList(id = '') {
       try {
         const res = (await getCommentsList(this.$route.params.id)).data.data
         // 将时间进行转换
@@ -131,6 +142,20 @@ export default {
         this.commentList = res
         this.commentList.last_id = res.last_id
         this.finished = false
+        // 判断目前文章数量是不是和总文章数量相同,相同结束
+        if (this.commentList.results.length >= res.total_count) {
+          this.finished = true
+        }
+        // 如果是二级点赞,将vuex中存储的内容重新赋值
+        const index = this.commentList.results.findIndex(
+          (item) => item.com_id === id
+        )
+        // 如果查找到了直接赋值,没有查找到需要继续往下查找
+        if (index !== -1) {
+          this.setCommentItem(this.commentList.results[index])
+        } else {
+          this.getCommentsList(id)
+        }
       } catch (error) {
         console.log(error)
       }
@@ -142,7 +167,9 @@ export default {
     // 点击回复弹出
     popupShow() {
       this.$refs.Popup.isPopupReplyShow = true
-    }
+    },
+    // 获取vuex中的方法
+    ...mapMutations(['setCommentItem'])
   },
   components: {
     Title,
@@ -207,5 +234,6 @@ export default {
   width: 100%;
   position: fixed;
   top: 0;
+  z-index: 3;
 }
 </style>
