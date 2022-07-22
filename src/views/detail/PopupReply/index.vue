@@ -73,7 +73,6 @@ export default {
       message: ''
     }
   },
-
   watch: {
     // 监听弹出层的弹出,弹出时重新获取数据
     isPopupReplyShow() {
