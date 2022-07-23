@@ -150,8 +150,9 @@ export default {
 .van-cell__value {
   height: 100%;
 }
-.van-cell {
-  margin-top: 30px;
+/deep/.van-cell {
+  padding: 0 !important;
+  margin-top: 30px !important;
 }
 .title {
   display: flex;
