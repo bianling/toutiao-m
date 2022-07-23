@@ -6,7 +6,7 @@
     <!-- 头像 -->
     <div class="title-img">
       <!-- 点击上传区域 -->
-      <van-uploader :after-read="addFile" v-model="fileList">
+      <van-uploader :after-read="addFile">
         <van-cell title="头像" is-link @click="showPhoto = true">
           <div slot="default" class="head-portrait">
             <van-image
@@ -26,7 +26,7 @@
         :style="{ height: '100%' }"
       >
         <div class="fileImg-div">
-          <img :src="url" class="popup-img" ref="img" />
+          <img :src="url" class="popup-img" ref="img" v-if="showPhoto" />
         </div>
         <span class="unUpUserPhoto" @click="unUpUserPhoto">取消</span>
         <span class="upUserPhoto" @click="upUserPhoto">确定</span>
@@ -137,10 +137,8 @@ export default {
       showName: false,
       showBirthday: false,
       showPhoto: false,
-      fileList: [],
       url: '',
       flag: true, // 节流阀
-      // cropperjs配置
       myCropper: ''
     }
   },
@@ -150,50 +148,47 @@ export default {
   methods: {
     // 图片插件初始化
     // 上传图片调用
-    addFile() {
+    addFile(file) {
       // 控制弹出层图片的url路径
-      this.url = this.fileList[0].content
+      this.url = file.content
       this.showPhoto = true
       // 初始化插件
-      this.fileList = []
-      if (!this.myCropper) {
-        this.$nextTick(() => {
-          console.log(this.$refs.img)
-          this.myCropper = new Cropper(this.$refs.img, {
-            viewMode: 1, // 只能在裁剪的图片范围内移动
-            dragMode: 'move', // 画布和图片都可以移动
-            aspectRatio: 1, // 裁剪区默认正方形
-            autoCropArea: 1, // 自动调整裁剪图片
-            cropBoxMovable: false, // 禁止裁剪区移动
-            cropBoxResizable: false, // 禁止裁剪区缩放
-            background: false // 关闭默认背景
-          })
+      this.$nextTick(() => {
+        this.myCropper = new Cropper(this.$refs.img, {
+          viewMode: 1, // 只能在裁剪的图片范围内移动
+          dragMode: 'move', // 画布和图片都可以移动
+          aspectRatio: 1, // 裁剪区默认正方形
+          autoCropArea: 1, // 自动调整裁剪图片
+          cropBoxMovable: false, // 禁止裁剪区移动
+          cropBoxResizable: false, // 禁止裁剪区缩放
+          background: false // 关闭默认背景
         })
-      }
+      })
     },
     // 更新头像
     async upUserPhoto() {
       try {
         // 搞个节流防止图片太大多次触发
-        console.log(this.myCropper)
-        console.log(this.myCropper.getCroppedCanvas())
         if (this.flag) {
           this.flag = false
           // 插件的方法可以将数据使用fromData包裹上传至后端
           this.myCropper.getCroppedCanvas().toBlob(async (blob) => {
             const fromData = new FormData()
             fromData.append('photo', blob)
-            await setUserPhoto(fromData)
+            this.userInfo.photo = (await setUserPhoto(fromData)).data.data.photo
             // 后续的提示和关闭弹窗
             this.$toast.success('更改头像成功')
             this.showPhoto = false
-            this.getUserProfile()
             this.flag = true
           })
         }
       } catch (error) {
-        console.log(error)
+        this.$toast.tail('更改头像失败')
       }
+    },
+    // 取消更新头像
+    unUpUserPhoto() {
+      this.showPhoto = false
     },
     // 获取用户个人资料
     async getUserProfile() {
@@ -248,10 +243,6 @@ export default {
       this.getUserProfile()
       this.showBirthday = false
       this.$toast.success('更新成功')
-    },
-    // 取消更新头像
-    unUpUserPhoto() {
-      this.showPhoto = false
     },
     // 取消更新生日
     unUpBirthday() {

@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapMutations, mapState } from 'vuex'
 import { getUserInfo } from '@/apis/user'
 export default {
   name: 'My',
@@ -108,7 +108,8 @@ export default {
         } = await getUserInfo()
         this.userInfo = data
       } catch (error) {
-        this.$toast.fail('请重新登录')
+        this.$toast.fail('用户信息认证失败,请重新登录')
+        this.setUser('')
       }
     },
     // 跳转编辑资料页面
@@ -120,7 +121,8 @@ export default {
       } else {
         this.$toast.fail('暂无权限,请登录')
       }
-    }
+    },
+    ...mapMutations(['setUser'])
   },
   created() {
     if (this.user.token) {

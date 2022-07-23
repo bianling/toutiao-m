@@ -33,7 +33,7 @@
       <!-- 底部回复栏 -->
       <div class="seize-a-seat"></div>
       <div class="bottom-popup">
-        <van-button type="default" round @click="show = true">评论</van-button>
+        <van-button type="default" round @click="show = true">回复</van-button>
       </div>
       <!-- 底部回复栏 -->
       <van-popup v-model="show" position="bottom" :style="{ height: '18%' }">
